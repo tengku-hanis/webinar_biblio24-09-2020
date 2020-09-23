@@ -102,10 +102,7 @@ plot(theme_map$map)
 
 ## Lotka's law 
 L <- lotka(result)
-  # Observed distribution of author productivity
-L$AuthorProd
-  # Beta coeeficient of Lotka's law
-L$Beta
+L
   # GOF of Lotka's law (r^2)
 L$R2
   # P value of K-S two sample test
@@ -118,7 +115,7 @@ Theoretical <- 10^(log10(L$C)-2*log10(L$AuthorProd[,1]))
 plot(L$AuthorProd[,1], Theoretical, type = "l", col = "red", ylim = c(0, 1), 
      xlab = "Articles", ylab = "Freq. of Authors", 
      main = "Scientific Productivity")
-lines(L$AuthorProd[,1], Observed,col = "blue")
+lines(L$AuthorProd[,1], Observed, col = "blue")
 legend(x = "topright", c("Theoretical (B=2)","Observed"),
        col = c("red","blue"), lty = c(1,1,1),cex = 0.6, bty = "n")  
 
