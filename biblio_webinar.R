@@ -12,42 +12,40 @@ library(tidyverse)
 data("bibtag"); View(bibtag)
 
 # Data
-data("biblio_df"); ?biblio_df
-names(biblio_df)
+link <- "https://raw.githubusercontent.com/tengku-hanis/webinar_biblio24-09-2020/
+master/scopus_acanthoma.bib"
+dat <- convert2df(file = link, dbsource = "scopus", format = "bibtex")
+names(dat)
 
 # Duplicate
-anyDuplicated(biblio_df$UT) # can use DOI/pubmed id
+anyDuplicated(dat$UT) # can use DOI/pubmed id
 
 ## Descriptive
-result <- biblioAnalysis(biblio_df)
+result <- biblioAnalysis(dat)
 S <- summary(result, k=10)
-p <- plot(result, k=10)
-p[1]
-p[2]
-p[3]
-p[4]
-p[5]
+P <- plot(result, k=10)
+P[1]
+P[2]
+P[3]
+P[4]
+P[5]
 
 ## Analysis of cited references
-biblio_df$CR[2] # separate is ;
+dat$CR[2] # separator is ;
 
 # Frequently cited manuscripts
-cr <- citations(biblio_df, field = "article", sep = " ")
+cr <- citations(dat, field = "article", sep = ";")
 cbind(cr$Cited[1:10])
 
 # Frequently cited first authors
-cr2 <- citations(biblio_df, field = "author", sep = " ")
+cr2 <- citations(dat, field = "author", sep = ";")
 cbind(cr2$Cited[1:10])
 
 # Authors' dominance ranking
-dom <- dominance(result, k=10)
-dom
+dominance(result, k=10)
 
 ## Top-authors's productivity over time
-topAU <- authorProdOverTime(biblio_df, k=10)
-head(topAU$dfAU) # author's productivity per year
-
-head(topAU$dfPapersAU) # author's document list
+topAU <- authorProdOverTime(dat, k=10)
 
 ## Top journals
 journal <- result$Sources %>% as.data.frame()
@@ -76,7 +74,7 @@ total_aff %>% select(-no_coAuthor) %>% arrange(desc(no_author)) %>% head(10)
 ## Visualization @ network plot
 
 # Country collaboration network
-MT <- metaTagExtraction(biblio_df, Field = "AU_CO", sep = " ")
+MT <- metaTagExtraction(dat, Field = "AU_CO", sep = " ")
 net_country <- biblioNetwork(MT, analysis = "collaboration", network = "countries", 
                             sep = " ")
 
@@ -88,14 +86,14 @@ networkPlot(net_country, n = 30, Title = "Country Collaboration",
 net_insti <- biblioNetwork(MT, analysis = "collaboration", network = "universities", 
                              sep = ";")
 
-networkPlot(net_insti, n = 30, Title = "Country Collaboration", 
+networkPlot(net_insti, n = 30, Title = "Institution Collaboration", 
             type = "auto", size=TRUE, remove.multiple=T,
             labelsize=0.7,cluster="optimal")
 
 
 ## Thematic map
-theme_map <- thematicMap(biblio_df, field = "DE", n = 303, minfreq = 30,
-                   stemming = FALSE, size = 0.84, n.labels=1, repel = F)
+theme_map <- thematicMap(dat, field = "TI", n = nrow(dat), minfreq = 20,
+                   stemming = FALSE, size = 0.84, n.labels=3, repel = F)
 plot(theme_map$map)
 
 ##---------------------------------------------------------------------------------
@@ -123,7 +121,7 @@ legend(x="topright",c("Theoretical (B=2)","Observed"),col=c("red","blue"),
        lty = c(1,1,1),cex=0.6,bty="n")  
 
 # Bradford's law @ core journals
-core_j <- bradford(biblio_df)
+core_j <- bradford(dat)
 core_j <- core_j$table %>% as.data.frame()
 zone_all <- core_j %>% select(SO, Freq, Zone) %>% group_by(Zone) %>% 
   summarise(journal = length(SO), article = sum(Freq))
