@@ -1,28 +1,28 @@
 ## ===========================================================================
 ## Webinar: An introduction to bibliometric analysis using R
 ## Author: Tengku Hanis
-## Date: 23-09-2020
+## Date: 24-09-2020
 ## ===========================================================================
 
-# Packages
+## Packages
 library(bibliometrix)
 library(tidyverse)
 
-# See  tags
+## See  tags
 data("bibtag"); View(bibtag)
 
-# Data
+## Data
 link <- "https://raw.githubusercontent.com/tengku-hanis/
 webinar_biblio24-09-2020/master/scopus_acanthoma.bib"
 dat <- convert2df(file = link, dbsource = "scopus", format = "bibtex")
 names(dat)
 
-# Duplicate
+## Duplicate
 anyDuplicated(dat$UT) # can use DOI/pubmed id
 
 ## Descriptive
 result <- biblioAnalysis(dat)
-S <- summary(result, k=10)
+summary(result, k=10)
 P <- plot(result, k=10)
 P[1]
 P[2]
@@ -33,25 +33,25 @@ P[5]
 ## Analysis of cited references
 dat$CR[2] # separator is ;
 
-# Frequently cited manuscripts
+# Frequently cited papers
 cited_paper <- citations(dat, field = "article", sep = ";")
-cbind(cited_paper$Cited[1:10])
+cbind(cr$Cited[1:10])
 
 # Frequently cited first authors
 cited_author <- citations(dat, field = "author", sep = ";")
 cbind(cited_author$Cited[1:10])
 
-## Authors' dominance ranking
-# no of first authored paper/no of multi-authored paper (https://is.gd/2xucF9)
-dominance(result, k=10)
+# Authors' dominance ranking 
+# (no of first authored paper/no of multi-authored paper)
+dominance(result, k=10) 
 
 ## Top-authors's productivity over time
 authorProdOverTime(dat, k=10)
 
 ## Top journals
-journal <- result$Sources %>% as.data.frame()
-names(journal) <- c("journals", "article_published")
-head(journal, 10)
+top_journal <- result$Sources %>% as.data.frame()
+names(top_journal) <- c("journals", "article_published")
+head(top_journal, 10)
 
 ## Top institutions based on affiliation 
 first_auth <- result$FirstAffiliation # first author affiliate
@@ -75,10 +75,9 @@ total_aff %>% select(-no_coAuthor) %>% arrange(desc(no_author)) %>% head(10)
 ## Visualization @ network plot
 
 # Country collaboration network
-MT <- metaTagExtraction(dat, Field = "AU_CO", sep = ";")
+MT <- metaTagExtraction(dat, Field = "AU_CO", sep = " ")
 net_country <- biblioNetwork(MT, analysis = "collaboration", 
-                             network = "countries", 
-                             sep = ";")
+                             network = "countries", sep = ";")
 
 networkPlot(net_country, n = 30, Title = "Country Collaboration", 
             type = "auto", size=TRUE, remove.multiple=T,
@@ -86,17 +85,16 @@ networkPlot(net_country, n = 30, Title = "Country Collaboration",
 
 ## Institution collaboration
 net_insti <- biblioNetwork(MT, analysis = "collaboration", 
-                           network = "universities", 
-                           sep = ";")
+                           network = "universities", sep = ";")
 
 networkPlot(net_insti, n = 30, Title = "Institution Collaboration", 
             type = "auto", size=TRUE, remove.multiple=T,
-            labelsize=0.7,cluster="optimal")
+            labelsize=0.7,cluster="louvain")
 
 
 ## Thematic map
-theme_map <- thematicMap(dat, field = "ID", n = nrow(dat), minfreq = 20,
-                         stemming = FALSE, size = 0.6, n.labels=3, repel = T)
+theme_map <- thematicMap(dat, field = "ID", n = nrow(dat), minfreq = 30,
+                   stemming = FALSE, size = 0.5, n.labels=3, repel = T)
 plot(theme_map$map)
 
 ##----------------------------------------------------------------------------
@@ -117,13 +115,14 @@ Observed <- L$AuthorProd[,3]
   # Theoretical distribution with Beta = 2
 Theoretical <- 10^(log10(L$C)-2*log10(L$AuthorProd[,1]))
 
-plot(L$AuthorProd[,1],Theoretical,type="l",col="red",ylim=c(0, 1), 
-     xlab="Articles",ylab="Freq. of Authors",main="Scientific Productivity")
-lines(L$AuthorProd[,1],Observed,col="blue")
-legend(x="topright",c("Theoretical (B=2)","Observed"),col=c("red","blue"),
-       lty = c(1,1,1),cex=0.6,bty="n")  
+plot(L$AuthorProd[,1], Theoretical, type = "l", col = "red", ylim = c(0, 1), 
+     xlab = "Articles", ylab = "Freq. of Authors", 
+     main = "Scientific Productivity")
+lines(L$AuthorProd[,1], Observed,col = "blue")
+legend(x = "topright", c("Theoretical (B=2)","Observed"),
+       col = c("red","blue"), lty = c(1,1,1),cex = 0.6, bty = "n")  
 
-## Bradford's law @ core journals
+# Bradford's law @ core journals
 core_journal <- bradford(dat)
 core_journal <- core_journal$table %>% as.data.frame()
 zone_all <- core_journal %>% select(SO, Freq, Zone) %>% group_by(Zone) %>% 
