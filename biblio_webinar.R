@@ -16,9 +16,11 @@ link <- "https://raw.githubusercontent.com/tengku-hanis/
 webinar_biblio24-09-2020/master/scopus_acanthoma.bib"
 dat <- convert2df(file = link, dbsource = "scopus", format = "bibtex")
 names(dat)
+dim(dat)
 
 ## Duplicate
-anyDuplicated(dat$UT) # can use DOI/pubmed id
+anyDuplicated(dat$DI) # can use DOI/pubmed id
+dat[duplicated(dat$DI), "DI"]
 
 ## Descriptive
 result <- biblioAnalysis(dat)
@@ -31,11 +33,11 @@ P[4]
 P[5]
 
 ## Analysis of cited references
-dat$CR[2] # separator is ;
+dat$CR[1] # separator is ;
 
 # Frequently cited papers
 cited_paper <- citations(dat, field = "article", sep = ";")
-cbind(cr$Cited[1:10])
+cbind(cited_paper$Cited[1:10])
 
 # Frequently cited first authors
 cited_author <- citations(dat, field = "author", sep = ";")
@@ -47,11 +49,6 @@ dominance(result, k=10)
 
 ## Top-authors's productivity over time
 authorProdOverTime(dat, k=10)
-
-## Top journals
-top_journal <- result$Sources %>% as.data.frame()
-names(top_journal) <- c("journals", "article_published")
-head(top_journal, 10)
 
 ## Top institutions based on affiliation 
 first_auth <- result$FirstAffiliation # first author affiliate
@@ -75,7 +72,7 @@ total_aff %>% select(-no_coAuthor) %>% arrange(desc(no_author)) %>% head(10)
 ## Visualization @ network plot
 
 # Country collaboration network
-MT <- metaTagExtraction(dat, Field = "AU_CO", sep = " ")
+MT <- metaTagExtraction(dat, Field = "AU_CO", sep = ";")
 net_country <- biblioNetwork(MT, analysis = "collaboration", 
                              network = "countries", sep = ";")
 
